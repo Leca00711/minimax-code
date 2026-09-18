@@ -52,6 +52,8 @@ pnpm mcode exec "Explain this project's test entry points" --model <provider-id>
 
 Replace the example URL, model name, and IDs with your configuration and the IDs returned by the list command. `--use` sets the default model; `exec --model` overrides only the current run. Backslash line continuations are for POSIX shells; use a single line in PowerShell.
 
+`--api-key-env` reads the current environment variable value and stores that value in the active profile's `config.yaml`; it does not save an environment-variable reference. The file still contains plaintext credentials. On POSIX systems, MCode restricts the config and its migration backups to mode `0600`, including existing files when loaded. Config writes and temporary copies also use `0600`. Windows file modes do not provide equivalent ACL protection; restrict access to the profile directory using Windows permissions.
+
 [Live acceptance](verification.md) separately verified MiniMax Token Plan and one configured BYOK provider. This is not a guarantee for every compatible service.
 
 ## 3. Search and image input
