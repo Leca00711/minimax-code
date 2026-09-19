@@ -5,7 +5,39 @@ import {
   TuiLoginRequiredError,
   requireTuiAccountLogin,
   requireTuiAgentAccess,
+  tuiAccountNeedsLoginPrompt,
+  tuiAgentAccessNeedsLogin,
 } from '../../src/application/login-gate.js';
+
+describe('welcome login prompt', () => {
+  it('stays silent when the selected model is a BYOK custom provider', () => {
+    const account = {
+      status: 'needs-login' as const,
+      defaultModel: 'custom_provider:deepseek/deepseek-flash',
+      providerId: 'custom_provider:deepseek',
+      authMode: 'api-key',
+      managedTokenPresent: false,
+      warnings: [],
+    };
+
+    expect(tuiAccountNeedsLoginPrompt(account)).toBe(false);
+    // Cloud/Agent features still require the MiniMax account; only the welcome nag is dropped.
+    expect(tuiAgentAccessNeedsLogin(account)).toBe(true);
+  });
+
+  it('keeps asking when the selected model is managed', () => {
+    const account = {
+      status: 'needs-login' as const,
+      defaultModel: 'minimax/MiniMax-M3',
+      providerId: 'minimax',
+      authMode: 'managed-login',
+      managedTokenPresent: false,
+      warnings: [],
+    };
+
+    expect(tuiAccountNeedsLoginPrompt(account)).toBe(true);
+  });
+});
 
 describe('MiniMax login gate', () => {
   it.each([
