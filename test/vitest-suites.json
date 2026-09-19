@@ -133,6 +133,7 @@
       "packages/tui/test/unit/tui-background-work-panel.test.ts",
       "packages/tui/test/unit/tui-composer.test.ts",
       "packages/tui/test/unit/tui-delegation-flow.test.ts",
+      "packages/tui/test/unit/tui-render-throttle.test.ts",
       "packages/tui/test/unit/tui-keybindings.test.ts",
       "packages/tui/test/unit/tui-runtime-adapter.test.ts",
       "packages/tui/test/unit/tui/controller/product/chrome-flow.test.ts",

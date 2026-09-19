@@ -106,3 +106,4 @@ Remove `L024` when the selected Pi baseline natively matches legacy-terminal `Ct
 - Change: strip leading zone prefixes before comparing screen lines, so initial frames, differential redraws, and history caches stay clean. Fullscreen behavior is unchanged.
 - Evidence: `test/unit/tui-engine-local-deltas.test.ts` checks initial and differential writes.
 - Removal condition: the selected Pi baseline supplies equivalent normal-mode filtering.
+| L033 | Streaming render | `tui.ts` | Derive the frame budget from the terminal: terminals that ignore DEC 2026 (Apple Terminal) render progressively, so keep a 50 ms coalescing budget instead of 16 ms. | Large viewports no longer show partially painted frames while the model streams. Terminals with synchronized output keep the previous frame rate. | `tui-render-throttle.test.ts`; engine render corpus |
