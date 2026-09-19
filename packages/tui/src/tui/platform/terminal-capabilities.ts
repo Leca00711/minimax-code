@@ -20,6 +20,12 @@ export interface TerminalCapabilities {
   readonly multiplexer: TerminalMultiplexer;
   readonly color: boolean;
   readonly colorLevel: TerminalColorLevel;
+  /**
+   * Whether the terminal applies a frame atomically through DEC 2026
+   * (synchronized output). Apple Terminal ignores the sequence and paints frames
+   * progressively, which surfaces as partial frames while streaming.
+   */
+  readonly supportsSynchronizedOutput: boolean;
 }
 
 export interface DetectTerminalCapabilitiesInput {
@@ -45,6 +51,7 @@ export function detectTerminalCapabilities(
     multiplexer,
     color: colorLevel > 0,
     colorLevel,
+    supportsSynchronizedOutput: terminalId !== 'apple-terminal',
   });
 }
 

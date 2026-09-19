@@ -331,6 +331,30 @@ export function isViewportTUI(tui: TUI): tui is ViewportTUI {
 	return (tui as Partial<ViewportTUI>)[VIEWPORT_TUI] === true;
 }
 
+/**
+ * Frame budget when the terminal applies each frame atomically through DEC 2026
+ * (synchronized output): up to ~60 fps.
+ */
+const MIN_RENDER_INTERVAL_MS = 16;
+
+/**
+ * Frame budget for terminals that ignore DEC 2026 - notably Apple Terminal - where a frame is
+ * painted progressively while the terminal parses it. At 60 fps a large viewport (for example
+ * 269x64) cannot finish painting before the next frame arrives, so streaming shows partial
+ * frames: the bottom of the frame looks cut and content flickers. A slower, coalesced budget
+ * lets every frame finish; see LOCAL_CHANGES L033.
+ */
+const MIN_RENDER_INTERVAL_PROGRESSIVE_MS = 50;
+
+export function resolveMinRenderIntervalMs(
+	env: Readonly<Record<string, string | undefined>> = process.env,
+	platform: NodeJS.Platform = process.platform,
+): number {
+	return platform === "darwin" && env.TERM_PROGRAM === "Apple_Terminal"
+		? MIN_RENDER_INTERVAL_PROGRESSIVE_MS
+		: MIN_RENDER_INTERVAL_MS;
+}
+
 export abstract class TuiBase extends Container implements TUI {
 	abstract readonly mode: TuiMode;
 	public terminal: Terminal;
@@ -343,7 +367,7 @@ export abstract class TuiBase extends Container implements TUI {
 	private immediateRenderScheduled = false;
 	private renderTimer: NodeJS.Timeout | undefined;
 	private lastRenderAt = 0;
-	private static readonly MIN_RENDER_INTERVAL_MS = 16;
+	private readonly minRenderIntervalMs = resolveMinRenderIntervalMs();
 	private showHardwareCursor = process.env.PI_HARDWARE_CURSOR === "1";
 	private clearOnShrink = process.env.PI_CLEAR_ON_SHRINK === "1";
 	protected fullRedrawCount = 0;
@@ -813,7 +837,7 @@ export abstract class TuiBase extends Container implements TUI {
 			return;
 		}
 		const elapsed = performance.now() - this.lastRenderAt;
-		const delay = Math.max(0, TuiBase.MIN_RENDER_INTERVAL_MS - elapsed);
+		const delay = Math.max(0, this.minRenderIntervalMs - elapsed);
 		this.renderTimer = setTimeout(() => {
 			this.renderTimer = undefined;
 			if (this.stopped || !this.renderRequested) {
