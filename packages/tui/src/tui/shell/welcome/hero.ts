@@ -2,9 +2,10 @@ import { visibleWidth } from '../../rendering/text.js';
 import { tuiChalk as chalk, tuiColors as colors } from '../../theme/runtime.js';
 import { centerToWidth } from '../frame.js';
 import {
-  MINIMAX_CODE_TERMINAL_MEDIUM_WORDMARK,
-  MINIMAX_CODE_TERMINAL_MICRO_WORDMARK,
-  MINIMAX_CODE_TERMINAL_WORDMARK,
+  FIAPIK_CODE_TERMINAL_MEDIUM_WORDMARK,
+  FIAPIK_CODE_TERMINAL_MICRO_WORDMARK,
+  FIAPIK_CODE_TERMINAL_WORDMARK,
+  FIAPIK_CODE_WORDMARK_GRADIENT,
   MINIMAX_CODE_WELCOME_DESIGN,
 } from './design.js';
 
@@ -13,22 +14,15 @@ export function renderTuiWelcomeHero(width: number): string[] {
     MINIMAX_CODE_WELCOME_DESIGN.hero;
   const source =
     width >= fullMinWidth
-      ? MINIMAX_CODE_TERMINAL_WORDMARK
+      ? FIAPIK_CODE_TERMINAL_WORDMARK
       : width >= mediumMinWidth
-        ? MINIMAX_CODE_TERMINAL_MEDIUM_WORDMARK
+        ? FIAPIK_CODE_TERMINAL_MEDIUM_WORDMARK
         : width >= microMinWidth
-          ? MINIMAX_CODE_TERMINAL_MICRO_WORDMARK
+          ? FIAPIK_CODE_TERMINAL_MICRO_WORDMARK
           : [fallbackTitle];
   const isCharacterWordmark = source.length > 1;
   const sourceWidth = Math.max(...source.map((line) => visibleWidth(line)));
-  const gradient = [
-    colors.wordmarkHighlight,
-    colors.wordmarkHighlight,
-    colors.brand,
-    colors.brand,
-    colors.wordmarkShadow,
-    colors.wordmarkShadow,
-  ];
+  const gradient = FIAPIK_CODE_WORDMARK_GRADIENT;
 
   return source.map((line, index) => {
     const canvasLine = line + ' '.repeat(Math.max(0, sourceWidth - visibleWidth(line)));
