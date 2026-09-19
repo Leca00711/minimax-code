@@ -25,8 +25,9 @@ This directory vendors `pi-mono` as source so MiniMax can patch, validate, and s
   because a full regeneration currently rewrites ~19k lines of unrelated models.dev drift.
 - Upstream PR: not created.
 - Validation: `third_party/pi-mono/packages/ai/test/openai-completions-deepseek-compat.test.ts`
-  (5 cases: catalog data, catalog payload, BYOK host heuristic, `low` forwarding,
-  `reasoning_content` replay) plus the full `openai-completions` suite (73 passed). End-to-end
+  (6 cases: catalog data, catalog payload, BYOK host heuristic, `low` forwarding,
+  `reasoning_content` replay, catalog prices applied through `calculateCost`) plus the full
+  `openai-completions` suite (74 passed). End-to-end
   against api.deepseek.com from the patched CLI: `max_tokens` present, `max_completion_tokens`
   absent, `reasoning_content` replayed on the assistant tool-call turn.
 

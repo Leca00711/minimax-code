@@ -47,7 +47,9 @@ always reported $0. `pi-ai` already converts `model.cost` into `usage.cost`
 
 Verified by unit test (`local-model-resolver.test.ts`): `deepseek-flash` resolves to
 `{ input: 0.14, output: 0.28, cacheRead: 0.0028, cacheWrite: 0 }`, `deepseek-v4-pro` to
-`{ 0.435, 0.87, 0.003625, 0 }`, unknown ids keep the zero fallback.
+`{ 0.435, 0.87, 0.003625, 0 }`, unknown ids keep the zero fallback. The second half of the loop
+is covered too: `calculateCost(model, usage)` on the `deepseek-flash` entry produces
+`0.14 / 0.14 / 0.0056 / 0.2856` for a 1M input + 0.5M output + 2M cache-read sample.
 
 ## 4. No futile OpenAI Responses token count on DeepSeek
 

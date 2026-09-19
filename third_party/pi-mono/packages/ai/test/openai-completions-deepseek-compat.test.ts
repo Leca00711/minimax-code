@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getModel } from "../src/models.ts";
+import { calculateCost, getModel } from "../src/models.ts";
 import { streamSimple } from "../src/stream.ts";
+import type { Usage } from "../src/types.ts";
 
 // DeepSeek-specific OpenAI-completions compat:
 //
@@ -123,6 +124,24 @@ describe("deepseek openai-completions compat", () => {
 		const params = mockState.lastParams as { thinking?: unknown; reasoning_effort?: string };
 		expect(params.thinking).toEqual({ type: "enabled" });
 		expect(params.reasoning_effort).toBe("low");
+	});
+
+	it("applies the catalog prices to the usage cost", () => {
+		const model = getModel("deepseek", "deepseek-flash")!;
+		const usage: Usage = {
+			input: 1_000_000,
+			output: 500_000,
+			cacheRead: 2_000_000,
+			cacheWrite: 0,
+			totalTokens: 3_500_000,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		};
+
+		const cost = calculateCost(model, usage);
+		expect(cost.input).toBeCloseTo(0.14, 10);
+		expect(cost.output).toBeCloseTo(0.14, 10);
+		expect(cost.cacheRead).toBeCloseTo(0.0056, 10);
+		expect(cost.total).toBeCloseTo(0.2856, 10);
 	});
 
 	it("replays reasoning_content on assistant tool-call messages", async () => {
