@@ -64,6 +64,36 @@ requests per turn before falling back to local BPE estimation.
 Verified end-to-end: before the patch a headless run produced 4 requests to
 `/v1/responses/input_tokens` (all 404); after it, only the single `/chat/completions` call.
 
+## 5. Image input for DeepSeek Flash (V4 Pro stays text-only)
+
+Verified against `api.deepseek.com`: `deepseek-flash` describes a synthetic half-red/half-blue test
+image correctly ("Veo rojo en la mitad superior y azul en la mitad inferior"), while
+`deepseek-v4-pro` replies that it cannot read the image
+(`No puedo ver la imagen porque el formato no es compatible`) and returns an empty completion for a
+small PNG. The catalog therefore marks only the Flash entries as image-capable:
+
+- `generate-models.ts` and `models.generated.ts`: `input: ["text", "image"]` for `deepseek-v4-flash`
+  and the `deepseek-flash` alias; `deepseek-v4-pro` keeps `["text"]`.
+
+For a BYOK provider the runtime derives the capability from the model config
+(`local-runtime-v2/src/service/model-system/resolution/model-ref.ts`:
+`support_image: modalities.includes('image') || capabilities.support_image === true`), so the
+provider entry needs:
+
+```yaml
+models:
+  deepseek-flash:            # the multimodal model only
+    attachment: true
+    modalities:
+      input: [text, image]
+      output: [text]
+    capabilities:
+      support_image: true
+```
+
+Without those fields the harness treats the model as text-only and refuses attachments before the
+request is built (`agent-tools/src/shared/multimodal-attachments.ts`).
+
 ## Not patched (documented behavior)
 
 - Custom providers force `thinkingFormat: "openai"` in the runtime, so no explicit

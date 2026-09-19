@@ -71,6 +71,15 @@ describe("deepseek openai-completions compat", () => {
 		}
 	});
 
+	it("marks DeepSeek Flash as image-capable and V4 Pro as text-only", () => {
+		// Verified against api.deepseek.com: deepseek-flash describes a red/blue test image,
+		// while deepseek-v4-pro answers that it cannot read images at all.
+		for (const id of ["deepseek-v4-flash", "deepseek-flash"]) {
+			expect(getModel("deepseek", id)!.input).toContain("image");
+		}
+		expect(getModel("deepseek", "deepseek-v4-pro")!.input).not.toContain("image");
+	});
+
 	it("sends max_tokens (not max_completion_tokens) for the catalog DeepSeek models", async () => {
 		const model = getModel("deepseek", "deepseek-v4-flash")!;
 

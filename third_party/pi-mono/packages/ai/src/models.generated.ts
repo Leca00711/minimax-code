@@ -3823,7 +3823,7 @@ export const MODELS = {
 			compat: {"requiresReasoningContentOnAssistantMessages":true,"thinkingFormat":"deepseek","maxTokensField":"max_tokens"},
 			reasoning: true,
 			thinkingLevelMap: {"minimal":null,"low":"low","medium":null,"high":"high","xhigh":"max"},
-			input: ["text"],
+			input: ["text", "image"],
 			cost: {
 				input: 0.14,
 				output: 0.28,
@@ -3842,7 +3842,7 @@ export const MODELS = {
 			compat: {"requiresReasoningContentOnAssistantMessages":true,"thinkingFormat":"deepseek","maxTokensField":"max_tokens"},
 			reasoning: true,
 			thinkingLevelMap: {"minimal":null,"low":"low","medium":null,"high":"high","xhigh":"max"},
-			input: ["text"],
+			input: ["text", "image"],
 			cost: {
 				input: 0.14,
 				output: 0.28,

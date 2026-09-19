@@ -1711,7 +1711,7 @@ async function generateModels() {
 			baseUrl: "https://api.deepseek.com",
 			provider: "deepseek",
 			reasoning: true,
-			input: ["text"],
+			input: ["text", "image"],
 			cost: {
 				input: 0.14,
 				output: 0.28,
@@ -1729,7 +1729,7 @@ async function generateModels() {
 			baseUrl: "https://api.deepseek.com",
 			provider: "deepseek",
 			reasoning: true,
-			input: ["text"],
+			input: ["text", "image"],
 			cost: {
 				input: 0.14,
 				output: 0.28,

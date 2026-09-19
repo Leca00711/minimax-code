@@ -11,6 +11,21 @@ This directory vendors `pi-mono` as source so MiniMax can patch, validate, and s
 
 ## Local patch ledger
 
+### 2026-09-19 — DeepSeek Flash image input
+
+- Reason: `deepseek-flash` is multimodal (it describes a synthetic red/blue test image correctly on
+  api.deepseek.com), but the catalog declared `input: ["text"]` for every DeepSeek model, so the
+  harness treated it as text-only and refused attachments. `deepseek-v4-pro` was re-checked and
+  answers that it cannot read images, so it stays text-only.
+- Affected package: `packages/ai` (`@earendil-works/pi-ai`).
+- Change type: catalog data only. `deepseek-v4-flash` and the `deepseek-flash` alias declare
+  `input: ["text", "image"]` in `models.generated.ts` and in the generator's `deepseekV4Models`;
+  `deepseek-v4-pro` keeps `["text"]`.
+- Upstream PR: not created.
+- Validation: `openai-completions-deepseek-compat.test.ts` asserts the modality split, and an
+  end-to-end run with an attached screenshot returned an accurate description.
+
+
 ### 2026-09-19 — DeepSeek: honor the output limit and expose the `low` reasoning level
 
 - Reason: DeepSeek accepts `max_completion_tokens` but silently ignores it, so a configured
