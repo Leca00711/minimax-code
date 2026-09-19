@@ -5,7 +5,8 @@ gaps found while running the CLI with a BYOK DeepSeek provider (`deepseek-flash`
 `deepseek-v4-pro` via `https://api.deepseek.com`, `openai-completions`). Every item below was
 verified against the live API, not inferred.
 
-Baseline: `0.4.12` source preview, commit `e3724a1`.
+Baseline: `0.4.12` source preview. The patch set was authored on `e3724a1` and **rebased onto
+upstream `main` at `a5639bc`** (13 upstream commits) with no conflicts in the patched files.
 
 ## 1. `max_tokens` instead of `max_completion_tokens` (compat)
 
@@ -73,6 +74,19 @@ Verified end-to-end: before the patch a headless run produced 4 requests to
   not force a tool choice in normal operation, so this is only reachable through MCP sampling.
 - The runtime replays `reasoning_content` (required by DeepSeek when a thinking-mode assistant
   message carries tool calls); this already worked and is covered by the regression test.
+
+## Rebase log
+
+- `a5639bc` (upstream `main`, 13 commits ahead of `e3724a1`): rebased cleanly. Only
+  `release/public-source.json` and `test/vitest-suites.json` overlap, and both merged without
+  conflicts because the additions landed in different regions; `pnpm check:source` passes with
+  4187 files after the rebase.
+- Upstream `#201` ("import reasoning effort options from provider presets") changed how *declared*
+  effort options are imported from models.dev presets. It does **not** replace patch 2:
+  `provider-presets.service.ts` now reads `reasoning_options` for presets, while
+  `getSupportedThinkingLevels()` in `pi-ai/src/models.ts` still gates the usable levels through
+  `model.thinkingLevelMap` — which is exactly what patch 2 edits. Custom providers keep taking
+  their options from `config.yaml` (`thinking.effortOptions`), unchanged.
 
 ## Validation
 
