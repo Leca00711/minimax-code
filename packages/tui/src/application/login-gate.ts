@@ -38,7 +38,18 @@ export function tuiAgentAccessNeedsLogin(account: TuiAccountStatus): boolean {
   );
 }
 
+/**
+ * A custom (BYOK) provider talks straight to the user's own endpoint, so the welcome screen has
+ * nothing to ask for: MiniMax account state is only required by managed models. The gate for
+ * cloud/Agent features (`tuiAgentAccessNeedsLogin`) is intentionally left untouched.
+ */
+export function tuiUsesCustomProviderModel(account: TuiAccountStatus): boolean {
+  const model = account.defaultModel ?? '';
+  return model.startsWith('custom_provider:') || account.providerId?.startsWith('custom_provider:') === true;
+}
+
 export function tuiAccountNeedsLoginPrompt(account: TuiAccountStatus): boolean {
+  if (tuiUsesCustomProviderModel(account)) return false;
   return tuiAgentAccessNeedsLogin(account) || account.managedTokenPresent === false;
 }
 
