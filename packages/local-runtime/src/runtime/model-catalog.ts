@@ -1,4 +1,4 @@
-import { getModel, type Api, type Model } from '@earendil-works/pi-ai';
+import { getModel, getModels, getProviders, type Api, type Model } from '@earendil-works/pi-ai';
 
 const FALLBACK_MODEL_LIMITS = {
   contextWindow: 200_000,
@@ -42,4 +42,39 @@ export function lookupLocalModelLimits(
     ...(api ? { api } : {}),
     ...(baseUrl ? { baseUrl } : {}),
   };
+}
+
+/**
+ * Catalog cost for a resolved model. Matching runs provider + id first (catalog providers), then
+ * provider base-URL host + id, so a BYOK/custom provider that points at a known API (for example
+ * https://api.deepseek.com) reports real spend instead of a hardcoded $0.
+ */
+export function lookupLocalCatalogCost(
+  provider: string | undefined,
+  modelId: string,
+  baseUrl?: string,
+): Model<Api>['cost'] | undefined {
+  if (provider) {
+    const exact = lookupLocalCatalogModel(provider, modelId);
+    if (exact) return exact.cost;
+  }
+  const host = catalogHost(baseUrl);
+  if (!host) return undefined;
+  for (const candidate of getProviders()) {
+    for (const model of getModels(candidate)) {
+      if (model.id === modelId && catalogHost(model.baseUrl) === host) {
+        return model.cost;
+      }
+    }
+  }
+  return undefined;
+}
+
+function catalogHost(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return undefined;
+  }
 }

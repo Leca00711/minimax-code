@@ -632,7 +632,7 @@ function buildResolvedModel(scope: {
     reasoning: thinking.enabled,
     ...(thinkingLevelMap ? { thinkingLevelMap } : {}),
     input: deriveModelInput(input.modelRef),
-    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    cost: resolveModelCost(input, baseUrl),
     contextWindow,
     maxTokens,
     ...(compat ? { compat } : {}),
@@ -808,6 +808,40 @@ function requireUsableCredentials(
     );
   }
   return { apiKey, baseUrl };
+}
+
+
+/**
+ * Catalog cost for a resolved model. The catalog entry is matched by provider + id first, then by
+ * provider base-URL host + id, so a BYOK/custom provider that points at a known API (for example
+ * https://api.deepseek.com) reports real spend instead of a hardcoded $0.
+ */
+function resolveModelCost(input: FinishResolveInput, baseUrl: string): Model<Api>['cost'] {
+  const exact =
+    input.catalogModel ??
+    lookupLocalCatalogModel(input.runtimeProvider ?? input.provider, input.modelId);
+  if (exact) return exact.cost;
+  const host = catalogHost(baseUrl);
+  if (!host) return ZERO_MODEL_COST;
+  for (const candidate of getProviders()) {
+    for (const model of getModels(candidate)) {
+      if (model.id === input.modelId && catalogHost(model.baseUrl) === host) {
+        return model.cost;
+      }
+    }
+  }
+  return ZERO_MODEL_COST;
+}
+
+const ZERO_MODEL_COST: Model<Api>['cost'] = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+
+function catalogHost(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return undefined;
+  }
 }
 
 function deriveModelInput(modelRef: IModelRef): Model<Api>['input'] {

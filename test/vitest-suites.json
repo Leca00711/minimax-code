@@ -103,6 +103,7 @@
       "packages/tui/test/unit/tui-model-picker.test.ts",
       "packages/tui/test/unit/tui/controller/interaction/input-flow.test.ts",
       "packages/tui/test/unit/tui/controller/projection/visible-presentation.test.ts",
+      "packages/local-runtime/test/unit/token-counter-adapters.test.ts",
       "packages/local-runtime/test/unit/local-native-tools.test.ts",
       "packages/local-runtime/test/unit/content-safety-api-fail-policy.test.ts",
       "packages/local-runtime/test/unit/content-safety-api-v2.test.ts",

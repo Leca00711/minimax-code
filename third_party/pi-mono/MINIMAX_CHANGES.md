@@ -11,6 +11,26 @@ This directory vendors `pi-mono` as source so MiniMax can patch, validate, and s
 
 ## Local patch ledger
 
+### 2026-09-19 — DeepSeek: honor the output limit and expose the `low` reasoning level
+
+- Reason: DeepSeek accepts `max_completion_tokens` but silently ignores it, so a configured
+  output cap never applied (a 16-token cap produced 26 completion tokens on `deepseek-flash`).
+  The catalog also marked the `low` reasoning level as unsupported even though the API accepts
+  it and it measurably reduces reasoning tokens (~30% fewer than `high` in a 3x3 A/B).
+- Affected package: `packages/ai` (`@earendil-works/pi-ai`).
+- Change type: provider compat data plus the URL heuristic in `detectCompat()`. DeepSeek joins
+  the `useMaxTokens` set; `deepseekCompat` declares `maxTokensField: "max_tokens"`;
+  `DEEPSEEK_V4_THINKING_LEVEL_MAP.low` becomes `"low"`; a `deepseek-flash` alias entry mirrors
+  `deepseek-v4-flash` (the API exposes both ids). `models.generated.ts` was edited surgically
+  because a full regeneration currently rewrites ~19k lines of unrelated models.dev drift.
+- Upstream PR: not created.
+- Validation: `third_party/pi-mono/packages/ai/test/openai-completions-deepseek-compat.test.ts`
+  (5 cases: catalog data, catalog payload, BYOK host heuristic, `low` forwarding,
+  `reasoning_content` replay) plus the full `openai-completions` suite (73 passed). End-to-end
+  against api.deepseek.com from the patched CLI: `max_tokens` present, `max_completion_tokens`
+  absent, `reasoning_content` replayed on the assistant tool-call turn.
+
+
 No upstream source files are changed in the baseline import.
 
 ### 2026-08-31 — Windows PowerShell ConstrainedLanguage compatibility

@@ -40,7 +40,7 @@ import type {
   LocalResolvedModelConfig,
   LocalRuntimeAuthContext,
 } from './model-resolver-contract.js';
-import { lookupLocalCatalogModel, lookupLocalModelLimits } from './model-catalog.js';
+import { lookupLocalCatalogCost, lookupLocalCatalogModel, lookupLocalModelLimits } from './model-catalog.js';
 import { readSelectedThinkingEffort } from '../model-provider/model-selection.js';
 import { resolveLocalModelCompatibility } from './model-resolver-compat.js';
 
@@ -480,7 +480,11 @@ export class LocalModelResolver implements LocalModelResolverLike {
         reasoning: reasoningCapable,
         ...(thinkingLevelMap ? { thinkingLevelMap } : {}),
         input: supportVideo || supportImage ? ['text', 'image'] : ['text'],
-        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+        cost: lookupLocalCatalogCost(
+          input.runtimeProvider ?? input.provider,
+          input.modelId,
+          resolvedBaseUrl,
+        ) ?? { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
         contextWindow: effectiveContextWindow,
         maxTokens: effectiveMaxTokens,
         ...(compat ? { compat } : {}),

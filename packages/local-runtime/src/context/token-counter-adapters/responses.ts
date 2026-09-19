@@ -27,11 +27,31 @@ export const genericResponsesTokenCounterAdapter: RemoteTokenCounterAdapter = {
     if (ctx.model.api !== 'openai-completions' && ctx.model.api !== 'openai-responses') {
       return false;
     }
+    if (isResponsesInputTokensUnsupportedHost(ctx.model.baseUrl)) {
+      return false;
+    }
     return !isManagedLoginTokenPlan(ctx);
   },
   buildRequest: (ctx) => buildResponsesCounterRequest(ctx, false),
   parseTokens: parseTopLevelInputTokens,
 };
+
+/**
+ * Hosts that answer 404 for the Responses `input_tokens` endpoint. Counting through them costs
+ * one wasted round trip per request, so the adapter declines and the caller falls back to local
+ * BPE estimation. Verified against api.deepseek.com (404 on every attempt).
+ */
+const RESPONSES_INPUT_TOKENS_UNSUPPORTED_HOSTS = new Set(['api.deepseek.com', 'deepseek.com']);
+
+/**
+ * Matches the base URL the same way the provider compat layer does (`baseUrl.includes(host)`),
+ * so DeepSeek-compatible gateways and local test hosts are covered as well.
+ */
+function isResponsesInputTokensUnsupportedHost(baseUrl: string | undefined): boolean {
+  if (!baseUrl) return false;
+  const normalized = baseUrl.toLowerCase();
+  return [...RESPONSES_INPUT_TOKENS_UNSUPPORTED_HOSTS].some((host) => normalized.includes(host));
+}
 
 function buildResponsesCounterRequest(
   ctx: RemoteTokenCountContext,

@@ -47,6 +47,44 @@ describe('LocalModelResolver', () => {
     expect(resolved.model.contextWindow).toBe(1_000_000);
   });
 
+  it('reports catalog cost for a BYOK provider that points at a known API host', async () => {
+    const resolver = new LocalModelResolver({
+      byokConfigGetter: () => ({
+        custom_provider: {
+          deepseek: {
+            api: 'openai-completions',
+            options: { apiKey: 'test-key', baseURL: 'https://api.deepseek.com' },
+            models: {
+              'deepseek-flash': { reasoning: true, limit: { context: 1_000_000, output: 384_000 } },
+              'deepseek-v4-pro': { reasoning: true, limit: { context: 1_000_000, output: 384_000 } },
+              'model-unknown': { reasoning: true, limit: { context: 100_000, output: 8_000 } },
+            },
+          },
+        },
+      }),
+    });
+
+    const resolve = (modelId: string) =>
+      resolver.resolveModel({
+        sessionId: 'byok-cost-session',
+        turnId: 'byok-cost-turn',
+        agentConfig: {
+          ...AGENT_CONFIG,
+          model: { provider: 'custom_provider:deepseek', model_id: modelId },
+        },
+      });
+
+    const flash = await resolve('deepseek-flash');
+    expect(flash.model.cost).toEqual({ input: 0.14, output: 0.28, cacheRead: 0.0028, cacheWrite: 0 });
+
+    const pro = await resolve('deepseek-v4-pro');
+    expect(pro.model.cost).toEqual({ input: 0.435, output: 0.87, cacheRead: 0.003625, cacheWrite: 0 });
+
+    // Unknown ids keep the conservative zero-cost fallback.
+    const unknown = await resolve('model-unknown');
+    expect(unknown.model.cost).toEqual({ input: 0, output: 0, cacheRead: 0, cacheWrite: 0 });
+  });
+
   it.each([
     [{ ...AGENT_CONFIG, model: undefined }, 'agentConfig.model is required'],
     [

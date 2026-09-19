@@ -162,7 +162,9 @@ const EAGER_TOOL_INPUT_STREAMING_UNSUPPORTED_ANTHROPIC_MODELS = new Set([
 
 const DEEPSEEK_V4_THINKING_LEVEL_MAP = {
 	minimal: null,
-	low: null,
+	// `low` is accepted by DeepSeek V4 and measurably reduces reasoning tokens
+	// (~30% fewer than `high` in a 3x3 A/B on deepseek-flash).
+	low: "low",
 	medium: null,
 	high: "high",
 	xhigh: "max",
@@ -1698,11 +1700,31 @@ async function generateModels() {
 	const deepseekCompat: OpenAICompletionsCompat = {
 		requiresReasoningContentOnAssistantMessages: true,
 		thinkingFormat: "deepseek",
+		// DeepSeek ignores `max_completion_tokens`; the limit only applies via `max_tokens`.
+		maxTokensField: "max_tokens",
 	};
 	const deepseekV4Models: Model<"openai-completions">[] = [
 		{
 			id: "deepseek-v4-flash",
 			name: "DeepSeek V4 Flash",
+			api: "openai-completions",
+			baseUrl: "https://api.deepseek.com",
+			provider: "deepseek",
+			reasoning: true,
+			input: ["text"],
+			cost: {
+				input: 0.14,
+				output: 0.28,
+				cacheRead: 0.0028,
+				cacheWrite: 0,
+			},
+			contextWindow: 1000000,
+			maxTokens: 384000,
+			compat: deepseekCompat,
+		},
+		{
+			id: "deepseek-flash",
+			name: "DeepSeek Flash",
 			api: "openai-completions",
 			baseUrl: "https://api.deepseek.com",
 			provider: "deepseek",
